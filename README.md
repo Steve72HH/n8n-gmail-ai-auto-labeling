@@ -2,7 +2,7 @@
 
 Ein n8n-Workflow, der Gmail-Mails automatisch klassifiziert, passende Gmail-Labels setzt und nur bei unsicheren Fällen eine KI-Klassifizierung über OpenRouter nutzt.
 
-![Workflow Overview](docs/images/workflow-overview.png)
+![Workflow Overview](workflow-overview.png)
 
 ## Was macht der Workflow?
 
