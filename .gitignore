@@ -1,0 +1,8 @@
+.env
+*.secret
+*.secrets
+credentials.json
+openrouter_key.txt
+gmail_token.json
+node_modules/
+.DS_Store
