@@ -1,0 +1,492 @@
+{
+  "name": "Gmail AI Auto Labeling - Public Template",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyHour"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -48,
+        -1208
+      ],
+      "id": "1cc5b493-6daa-44aa-a56c-11996b2019bf",
+      "name": "Gmail Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "091e8662-5540-4fe8-86bc-01b71326bac5",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "f2a06a44-383d-430d-a5a2-0f617e8bd473",
+              "name": "threadId",
+              "value": "={{ $json.threadId }}",
+              "type": "string"
+            },
+            {
+              "id": "bb9dd446-cd32-4117-ba44-3bd2adaaf0ce",
+              "name": "From",
+              "value": "={{ $json.From || $json.from || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "a8640621-d72a-4f05-b73f-34b780a3ef9f",
+              "name": "from_email",
+              "value": "={{ (($json.From || $json.from || \"\").match(/<([^>]+)>/)?.[1] || ($json.From || $json.from || \"\").match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i)?.[0] || \"\").toLowerCase() }}",
+              "type": "string"
+            },
+            {
+              "id": "55005e83-7501-4918-88fc-31948c2aa92e",
+              "name": "from_name",
+              "value": "={{ (($json.From || $json.from || \"\").match(/^\"?([^\"<]+)\"?\\s*</)?.[1] || \"\").trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "d169b179-a081-45c9-a0bc-d7cf2087b050",
+              "name": "sender_domain",
+              "value": "={{ ((($json.From || $json.from || \"\").match(/@([^>\\s]+)/)?.[1]) || \"\").toLowerCase() }}",
+              "type": "string"
+            },
+            {
+              "id": "6eefd766-e7e6-4f3d-a985-6460958706d9",
+              "name": "Subject",
+              "value": "={{ $json.Subject || $json.subject || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "e2a4da4c-bbdc-4f7a-9c73-b1e403de677c",
+              "name": "snippet",
+              "value": "={{ $json.snippet || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "a2f70cfe-18b0-453b-bb1d-de4b8fb6a43a",
+              "name": "payload.mimeType",
+              "value": "={{ $json.payload.mimeType }}",
+              "type": "string"
+            },
+            {
+              "id": "61bcf939-80f0-4e96-b5ca-804e3d88040e",
+              "name": "payload.mimeType",
+              "value": "={{ $json.payload?.mimeType || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "c6123ecb-ced3-408f-86e7-296818738133",
+              "name": "labels",
+              "value": "={{ ($json.labels || []).map(label => label.name || label.id || label) }}",
+              "type": "array"
+            },
+            {
+              "id": "7cf95a77-ab19-4076-897e-5062f54bd267",
+              "name": "attachments",
+              "value": "={{ (() => { const names = []; const walk = (part) => { if (!part) return; if (part.filename) names.push(part.filename); (part.parts || []).forEach(walk); }; walk($json.payload); return names; })() }}",
+              "type": "array"
+            },
+            {
+              "id": "affd9219-eb6c-43f6-b2fa-8e7a4f4ef792",
+              "name": "attachment_count",
+              "value": "={{ (() => { const names = []; const walk = (part) => { if (!part) return; if (part.filename) names.push(part.filename); (part.parts || []).forEach(walk); }; walk($json.payload); return names.length; })() }}",
+              "type": "number"
+            },
+            {
+              "id": "9a7ceae3-975f-4934-a0d3-347de4218534",
+              "name": "has_attachments",
+              "value": "={{ (() => { const names = []; const walk = (part) => { if (!part) return; if (part.filename) names.push(part.filename); (part.parts || []).forEach(walk); }; walk($json.payload); return names.length > 0; })() }}",
+              "type": "boolean"
+            },
+            {
+              "id": "fae51baf-bf4e-4402-b8d8-ae88d0d1a864",
+              "name": "internalDate",
+              "value": "={{ $json.internalDate ? new Date(Number($json.internalDate)).toISOString() : \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "7a2ddce1-d166-4360-b96a-400607872b76",
+              "name": "internal_date_iso",
+              "value": "={{ $json.internalDate ? new Date(Number($json.internalDate)).toISOString() : \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "5a562b4f-608c-4a62-bdd3-45c9c718b926",
+              "name": "classification_text",
+              "value": "={{ [   $json.From || $json.from || \"\",   $json.Subject || $json.subject || \"\",   $json.snippet || \"\",   ...(() => { const names = []; const walk = (part) => { if (!part) return; if (part.filename) names.push(part.filename); (part.parts || []).forEach(walk); }; walk($json.payload); return names; })() ].join(\" \").toLowerCase() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        -1400
+      ],
+      "id": "0c44cf15-1c26-4a17-a1d8-cb0786932012",
+      "name": "Normalize Gmail Mail"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n/**\n * Classify Mail\n *\n * Erwarteter Input aus \"Normalize Gmail Mail\":\n * - id / message_id\n * - threadId / thread_id\n * - From / from_raw\n * - from_email\n * - from_name\n * - sender_domain\n * - Subject / subject\n * - snippet\n * - attachments\n * - classification_text\n *\n * Output:\n * - label_names\n * - primary_label\n * - needs_ai\n * - classification_confidence\n * - classification_source\n * - classification\n */\n\nconst WORKFLOW_LABELS = new Set([\n  \"AUTO/Dringend\",\n  \"AUTO/SPAM\",\n  \"AUTO/Review\",\n  \"AUTO/Fehler\",\n  \"AUTO/Wichtig\"\n]);\n\nconst RULES = [\n  /**\n   * WICHTIG / RECHT / POLIZEI / BANK / VERSICHERUNG\n   */\n\n  {\n    group: \"lawyer\",\n    label: \"AUTO/Anwalt\",\n    domains: [\n      \"rechtsanwalt-tripp.de\",\n      \"kanzlei-dannhauer.de\"\n    ],\n    keywords: [\n      \"rechtsanwalt\",\n      \"kanzlei\",\n      \"anwalt\",\n      \"tripp\",\n      \"dannhauer\",\n      \"mandat\",\n      \"mandant\",\n      \"akte\",\n      \"frist\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"police\",\n    label: \"AUTO/Polizei/Onlinewache\",\n    domains: [\n      \"hh.onlinewache.polizei.de\",\n      \"polizei.de\"\n    ],\n    keywords: [\n      \"onlinewache\",\n      \"polizei\",\n      \"anzeige\",\n      \"vorgangsnummer\",\n      \"aktenzeichen\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"bank\",\n    label: \"AUTO/Bank/Santander\",\n    domains: [\n      \"email.santander.de\",\n      \"santander.de\"\n    ],\n    keywords: [\n      \"santander\",\n      \"consumer bank\",\n      \"kredit\",\n      \"banking\",\n      \"darlehen\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"insurance\",\n    label: \"AUTO/Versicherung\",\n    domains: [\n      \"as.check24.de\"\n    ],\n    keywords: [\n      \"neodigital\",\n      \"versicherung\",\n      \"kfz-versicherung\",\n      \"kfz dokumente\",\n      \"kfz-dokumente\",\n      \"versicherungsdokumente\",\n      \"police\",\n      \"schaden\",\n      \"beitrag\"\n    ],\n    minScore: 40,\n    trusted: true\n  },\n\n  /**\n   * AMAZON / KDP / AWS\n   */\n\n  {\n    group: \"amazon\",\n    label: \"AUTO/Amazon KDP\",\n    domains: [\n      \"kdp.amazon.com\",\n      \"kdp.amazon.de\",\n      \"amazonkdp.com\"\n    ],\n    keywords: [\n      \"kindle direct publishing\",\n      \"kdp\",\n      \"royalty\",\n      \"royalties\",\n      \"author central\",\n      \"paperback\",\n      \"ebook\",\n      \"book details\",\n      \"kdp select\",\n      \"kindle\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"amazon\",\n    label: \"AUTO/Amazon KDP\",\n    domains: [\n      \"helium10.com\",\n      \"pixel-labs.com\"\n    ],\n    keywords: [\n      \"pixel labs\",\n      \"helium 10\",\n      \"helium10\",\n      \"kdp\",\n      \"receipt\",\n      \"your receipt from pixel labs\",\n      \"dba helium 10\"\n    ],\n    minScore: 40,\n    trusted: true\n  },\n\n  {\n    group: \"amazon\",\n    label: \"AUTO/Amazon\",\n    domains: [\n      \"amazon.de\",\n      \"amazon.com\",\n      \"amazon-europe.com\",\n      \"marketplace.amazon.de\",\n      \"business.amazon.de\",\n      \"primevideo.com\"\n    ],\n    keywords: [\n      \"amazon\",\n      \"amazon prime\",\n      \"amazon spar-abo\",\n      \"spar-abo\",\n      \"amazon business\",\n      \"prime video\",\n      \"bestellung\",\n      \"versandbestätigung\",\n      \"lieferung\",\n      \"rechnung\",\n      \"retoure\",\n      \"erstattung\",\n      \"prime\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"server\",\n    label: \"AUTO/Server/Domains\",\n    domains: [\n      \"amazonaws.com\",\n      \"aws.amazon.com\"\n    ],\n    keywords: [\n      \"amazon web services\",\n      \"aws\",\n      \"amazonaws\",\n      \"billing\",\n      \"invoice\",\n      \"cloud\",\n      \"server\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  /**\n   * BANKEN / ZAHLUNG / KREDITKARTEN / KREDITANGEBOTE\n   */\n\n  {\n    group: \"bank\",\n    label: \"AUTO/Bank/Haspa\",\n    domains: [\n      \"haspa.de\",\n      \"sparkasse.de\"\n    ],\n    keywords: [\n      \"haspa\",\n      \"hamburger sparkasse\",\n      \"sparkasse\",\n      \"elektronisches postfach\",\n      \"konto\",\n      \"online-banking\",\n      \"pushtan\",\n      \"push-tan\",\n      \"tan\",\n      \"umsatz\",\n      \"wertpapierdokumente\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"bank\",\n    label: \"AUTO/Bank/ING\",\n    domains: [\n      \"ing.de\",\n      \"ing-diba.de\"\n    ],\n    keywords: [\n      \"ing\",\n      \"ing-diba\",\n      \"konto\",\n      \"depot\",\n      \"banking\",\n      \"umsatz\",\n      \"post-box\",\n      \"postbox\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"payment\",\n    label: \"AUTO/PayPal\",\n    domains: [\n      \"paypal.de\",\n      \"paypal.com\",\n      \"mail.paypal.de\",\n      \"mail.paypal.com\"\n    ],\n    keywords: [\n      \"paypal\",\n      \"zahlung\",\n      \"transaktion\",\n      \"rechnung\",\n      \"payment\",\n      \"transaction\",\n      \"abbuchung\",\n      \"geld gesendet\",\n      \"geld erhalten\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"creditcard\",\n    label: \"AUTO/Kreditkarte/Barclays\",\n    domains: [\n      \"barclays.de\",\n      \"barclaycard.de\"\n    ],\n    keywords: [\n      \"barclays\",\n      \"barclaycard\",\n      \"kreditkarte\",\n      \"kartenabrechnung\",\n      \"abrechnung\",\n      \"visa\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"creditcard\",\n    label: \"AUTO/Kreditkarte/Amazon Visa\",\n    domains: [],\n    keywords: [\n      \"amazon visa\",\n      \"amazon kreditkarte\",\n      \"amazon.de visa\",\n      \"visa karte\",\n      \"visa abrechnung\",\n      \"kreditkartenabrechnung\"\n    ],\n    minScore: 40,\n    trusted: true\n  },\n\n  {\n    group: \"creditcard\",\n    label: \"AUTO/Kreditkarte/Extra Card\",\n    domains: [],\n    keywords: [\n      \"extra card\",\n      \"extracard\",\n      \"extra karte\",\n      \"kartenabrechnung\",\n      \"kreditkarte\"\n    ],\n    minScore: 40,\n    trusted: true\n  },\n\n  {\n    group: \"credit\",\n    label: \"AUTO/Kreditangebote\",\n    domains: [\n      \"mail.verivox.de\",\n      \"verivox.de\"\n    ],\n    keywords: [\n      \"verivox kredit\",\n      \"kredit\",\n      \"darlehen\",\n      \"finanzierung\",\n      \"kreditangebot\",\n      \"kreditvergleich\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  /**\n   * FACHZEITSCHRIFTEN / IT-INFOS / LEARNING\n   */\n\n  {\n    group: \"magazine\",\n    label: \"AUTO/Fachzeitschriften/Heise\",\n    domains: [\n      \"heise.de\",\n      \"ct.de\"\n    ],\n    keywords: [\n      \"heise\",\n      \"c't\",\n      \"ct magazin\",\n      \"ix\",\n      \"heise security\",\n      \"heise online\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"magazine\",\n    label: \"AUTO/Fachzeitschriften/IT Administrator\",\n    domains: [\n      \"it-administrator.de\"\n    ],\n    keywords: [\n      \"it-administrator\",\n      \"it administrator\",\n      \"admin-magazin\",\n      \"administrator magazin\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"itinfo\",\n    label: \"AUTO/IT-Info\",\n    domains: [\n      \"ip-insider.de\",\n      \"easywebinar.com\",\n      \"linuxfoundation.org\"\n    ],\n    keywords: [\n      \"ip-insider\",\n      \"the hacker news\",\n      \"linux foundation\",\n      \"linux foundation events\",\n      \"security news\",\n      \"webinar\",\n      \"events\",\n      \"it security\",\n      \"cybersecurity\",\n      \"update\"\n    ],\n    minScore: 40,\n    trusted: true\n  },\n\n  {\n    group: \"learning\",\n    label: \"AUTO/Learning/TryHackMe\",\n    domains: [\n      \"tryhackme.com\"\n    ],\n    keywords: [\n      \"tryhackme\",\n      \"try hack me\",\n      \"learning\",\n      \"cyber security\",\n      \"ctf\",\n      \"room\",\n      \"path\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"learning\",\n    label: \"AUTO/Learning/Skool\",\n    domains: [\n      \"skool.com\"\n    ],\n    keywords: [\n      \"robonuggets\",\n      \"the robonuggets network\",\n      \"learning\",\n      \"free\",\n      \"skool\"\n    ],\n    minScore: 40,\n    trusted: true\n  },\n\n  /**\n   * SERVER / HOSTING / DOMAINS\n   */\n\n  {\n    group: \"server\",\n    label: \"AUTO/Server/Hetzner\",\n    domains: [\n      \"hetzner.com\",\n      \"hetzner.de\"\n    ],\n    keywords: [\n      \"hetzner\",\n      \"hetzner status\",\n      \"noreply-status\",\n      \"robot\",\n      \"cloud\",\n      \"dedicated\",\n      \"server\",\n      \"rechnung\",\n      \"invoice\",\n      \"storage box\",\n      \"konsoleh\",\n      \"incident\",\n      \"maintenance\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"server\",\n    label: \"AUTO/Server/IONOS\",\n    domains: [\n      \"ionos.de\",\n      \"ionos.com\"\n    ],\n    keywords: [\n      \"ionos\",\n      \"kundenservice ionos\",\n      \"rechnungsstelle ionos\",\n      \"support\",\n      \"domain\",\n      \"hosting\",\n      \"server\",\n      \"rechnung\",\n      \"vertrag\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"phone\",\n    label: \"AUTO/Telefon\",\n    domains: [\n      \"1und1.de\"\n    ],\n    keywords: [\n      \"1&1\",\n      \"1und1\",\n      \"rechnungsstelle\",\n      \"telefon\",\n      \"mobilfunk\",\n      \"dsl\",\n      \"rechnung\",\n      \"vertrag\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"server\",\n    label: \"AUTO/Server/Netcup\",\n    domains: [\n      \"netcup.de\",\n      \"netcup.com\"\n    ],\n    keywords: [\n      \"netcup\",\n      \"vserver\",\n      \"root-server\",\n      \"rootserver\",\n      \"domain\",\n      \"rechnung\",\n      \"newsletter\",\n      \"scp\",\n      \"ccp\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"server\",\n    label: \"AUTO/Server/Hostinger\",\n    domains: [\n      \"hostinger.com\",\n      \"hostinger.de\",\n      \"user.hostinger.com\",\n      \"emails.hostinger.com\",\n      \"updates.hostinger.com\"\n    ],\n    keywords: [\n      \"hostinger\",\n      \"hosting\",\n      \"domain\",\n      \"server\",\n      \"vps\",\n      \"rechnung\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"server\",\n    label: \"AUTO/Server/Zap-Hosting\",\n    domains: [\n      \"zap-hosting.com\"\n    ],\n    keywords: [\n      \"zap-hosting\",\n      \"zap hosting\",\n      \"gameserver\",\n      \"server\",\n      \"rechnung\",\n      \"invoice\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"server\",\n    label: \"AUTO/Server/Domains\",\n    domains: [\n      \"checkdomain.de\",\n      \"news.checkdomain.de\"\n    ],\n    keywords: [\n      \"checkdomain\",\n      \"domain\",\n      \"domains\",\n      \"dns\",\n      \"hosting\",\n      \"ssl\",\n      \"webhosting\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"server\",\n    label: \"AUTO/Server/Domains\",\n    domains: [\n      \"vpsserver.com\",\n      \"ovhcloud.com\",\n      \"services.ovhcloud.com\"\n    ],\n    keywords: [\n      \"vpsserver\",\n      \"ovhcloud\",\n      \"ovh\",\n      \"billing\",\n      \"support\",\n      \"vps\",\n      \"server\",\n      \"cloud\",\n      \"invoice\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  /**\n   * SECURITY / CROWDSEC / IT\n   */\n\n  {\n    group: \"security\",\n    label: \"AUTO/Security/CrowdSec\",\n    domains: [\n      \"crowdsec.net\",\n      \"crowdsec.com\"\n    ],\n    keywords: [\n      \"crowdsec\",\n      \"security alert\",\n      \"bouncer\",\n      \"decision\",\n      \"remediation\",\n      \"security engine\",\n      \"console\",\n      \"alert\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"it\",\n    label: \"AUTO/IT/VPN\",\n    domains: [\n      \"mail.nordvpn.com\",\n      \"nordvpn.com\"\n    ],\n    keywords: [\n      \"nordvpn\",\n      \"vpn\",\n      \"privacy\",\n      \"security\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"it\",\n    label: \"AUTO/IT/Bitdefender\",\n    domains: [\n      \"hello.bitdefender.com\",\n      \"bitdefender.com\"\n    ],\n    keywords: [\n      \"bitdefender\",\n      \"antivirus\",\n      \"security\",\n      \"schutz\",\n      \"threat\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  /**\n   * KI / AI\n   */\n\n  {\n    group: \"ai\",\n    label: \"AUTO/KI/OpenRouter\",\n    domains: [\n      \"openrouter.ai\"\n    ],\n    keywords: [\n      \"openrouter\",\n      \"credits\",\n      \"usage\",\n      \"api key\",\n      \"billing\",\n      \"invoice\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"ai\",\n    label: \"AUTO/KI/ChatGPT\",\n    domains: [\n      \"chatgpt.com\"\n    ],\n    keywords: [\n      \"chatgpt\",\n      \"chatgpt plus\",\n      \"chatgpt pro\",\n      \"subscription\",\n      \"workspace\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"ai\",\n    label: \"AUTO/KI/OpenAI\",\n    domains: [\n      \"openai.com\"\n    ],\n    keywords: [\n      \"openai\",\n      \"api\",\n      \"billing\",\n      \"usage\",\n      \"invoice\",\n      \"platform\",\n      \"credits\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"ai\",\n    label: \"AUTO/KI/ElevenLabs\",\n    domains: [\n      \"stripe.com\",\n      \"elevenlabs.io\",\n      \"elevenlabs.com\"\n    ],\n    keywords: [\n      \"eleven labs\",\n      \"elevenlabs\",\n      \"failed-payments\",\n      \"failed payment\",\n      \"invoice\",\n      \"stripe\"\n    ],\n    minScore: 40,\n    trusted: true\n  },\n\n  {\n    group: \"ai\",\n    label: \"AUTO/KI/Midjourney\",\n    domains: [\n      \"midjourney.com\"\n    ],\n    keywords: [\n      \"midjourney\",\n      \"invoice\",\n      \"statement\",\n      \"subscription\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  /**\n   * VIDEO / TRANSKRIPTION\n   */\n\n  {\n    group: \"video\",\n    label: \"AUTO/Video/HeyGen\",\n    domains: [\n      \"heygen.com\"\n    ],\n    keywords: [\n      \"heygen\",\n      \"avatar\",\n      \"video generation\",\n      \"credits\",\n      \"instant avatar\",\n      \"video\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"video\",\n    label: \"AUTO/Video/NotebookLM\",\n    domains: [],\n    keywords: [\n      \"notebooklm\",\n      \"notebook lm\",\n      \"audio overview\",\n      \"notebook\",\n      \"google notebook\"\n    ],\n    minScore: 40,\n    trusted: true\n  },\n\n  {\n    group: \"video\",\n    label: \"AUTO/Video/Runway\",\n    domains: [\n      \"runwayml.com\"\n    ],\n    keywords: [\n      \"runway\",\n      \"runway ai\",\n      \"runwayml\",\n      \"upcoming invoice\",\n      \"video creation\",\n      \"generative video\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"video\",\n    label: \"AUTO/Video/CapCut\",\n    domains: [\n      \"email.capcut.com\",\n      \"capcut.com\"\n    ],\n    keywords: [\n      \"capcut\",\n      \"video\",\n      \"template\",\n      \"editor\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"video\",\n    label: \"AUTO/Video/TurboScribe\",\n    domains: [\n      \"turboscribe.ai\"\n    ],\n    keywords: [\n      \"turboscribe\",\n      \"transcription\",\n      \"transkription\",\n      \"audio transcription\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  /**\n   * SOCIAL MEDIA\n   */\n\n  {\n    group: \"social\",\n    label: \"AUTO/Social/Instagram\",\n    domains: [\n      \"instagram.com\",\n      \"mail.instagram.com\",\n      \"facebookmail.com\"\n    ],\n    keywords: [\n      \"instagram\",\n      \"login\",\n      \"security code\",\n      \"new follower\",\n      \"reel\",\n      \"account\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"social\",\n    label: \"AUTO/Social/YouTube\",\n    domains: [\n      \"youtube.com\"\n    ],\n    keywords: [\n      \"youtube\",\n      \"youtube studio\",\n      \"youtube creators\",\n      \"copyright\",\n      \"community guidelines\",\n      \"video\",\n      \"channel\",\n      \"shorts\"\n    ],\n    minScore: 40,\n    trusted: true\n  },\n\n  {\n    group: \"social\",\n    label: \"AUTO/Social/TikTok\",\n    domains: [\n      \"tiktok.com\",\n      \"account.tiktok.com\",\n      \"tiktokacademy.com\",\n      \"hs-send.com\",\n      \"bf02.na2.hs-send.com\"\n    ],\n    keywords: [\n      \"tiktok\",\n      \"tiktok academy\",\n      \"tiktokacademy.com\",\n      \"verification code\",\n      \"creator\",\n      \"video\",\n      \"account\",\n      \"login\"\n    ],\n    minScore: 20,\n    trusted: true\n  },\n\n  {\n    group: \"social\",\n    label: \"AUTO/Social/Nebenan\",\n    domains: [\n      \"nebenan.de\"\n    ],\n    keywords: [\n      \"nebenan.de\",\n      \"rahlstedt west\",\n      \"nachbarschaft\",\n      \"nachbarn\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  /**\n   * SKOOL\n   */\n\n  {\n    group: \"skool\",\n    label: \"AUTO/Skool\",\n    domains: [\n      \"skool.com\"\n    ],\n    keywords: [\n      \"ai money lab\",\n      \"skool\",\n      \"community\",\n      \"classroom\"\n    ],\n    minScore: 40,\n    trusted: true\n  },\n\n  /**\n   * LIEFERANTEN / SHOPPING\n   */\n\n  {\n    group: \"supplier\",\n    label: \"AUTO/Lieferanten/DHL\",\n    domains: [\n      \"dhl.de\",\n      \"deutschepost.de\",\n      \"deutschepost.com\"\n    ],\n    keywords: [\n      \"dhl\",\n      \"paket\",\n      \"sendung\",\n      \"zustellung\",\n      \"packstation\",\n      \"sendungsverfolgung\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"supplier\",\n    label: \"AUTO/Lieferanten/DPD\",\n    domains: [\n      \"dpd.de\",\n      \"dpd.com\"\n    ],\n    keywords: [\n      \"dpd\",\n      \"paket\",\n      \"lieferung\",\n      \"zustellung\",\n      \"parcel\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"supplier\",\n    label: \"AUTO/Lieferanten/REWE\",\n    domains: [\n      \"rewe.de\"\n    ],\n    keywords: [\n      \"rewe\",\n      \"lieferung\",\n      \"bestellung\",\n      \"rechnung\",\n      \"lebensmittel\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"supplier\",\n    label: \"AUTO/Lieferanten/Home24\",\n    domains: [\n      \"home24.de\",\n      \"reply.em.home24.de\"\n    ],\n    keywords: [\n      \"home24\",\n      \"homie days\",\n      \"möbel\",\n      \"wohnideen\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"shopping\",\n    label: \"AUTO/eBay\",\n    domains: [\n      \"ebay.com\",\n      \"ebay.de\"\n    ],\n    keywords: [\n      \"ebay\",\n      \"angebot\",\n      \"auktion\",\n      \"kaufen\",\n      \"verkaufen\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  /**\n   * GOOGLE\n   */\n\n  {\n    group: \"google\",\n    label: \"AUTO/Google/Maps\",\n    domains: [\n      \"google.com\"\n    ],\n    keywords: [\n      \"google maps\",\n      \"maps\",\n      \"google-maps-noreply\",\n      \"rezension\",\n      \"standort\",\n      \"local guide\"\n    ],\n    minScore: 40,\n    trusted: true\n  },\n\n  {\n    group: \"google\",\n    label: \"AUTO/Google/Search Console\",\n    domains: [\n      \"google.com\"\n    ],\n    keywords: [\n      \"search console\",\n      \"sc-noreply\",\n      \"google search console\",\n      \"indexierung\",\n      \"coverage\",\n      \"performance\"\n    ],\n    minScore: 40,\n    trusted: true\n  },\n\n  {\n    group: \"google\",\n    label: \"AUTO/Google/Auswertungen\",\n    domains: [\n      \"google.com\",\n      \"googlemail.com\"\n    ],\n    keywords: [\n      \"google analytics\",\n      \"analytics\",\n      \"google ads\",\n      \"google business\",\n      \"google unternehmensprofil\",\n      \"auswertung\",\n      \"report\",\n      \"performancebericht\",\n      \"analytics report\"\n    ],\n    minScore: 40,\n    trusted: false\n  },\n\n  /**\n   * EDUCATION / FERNSTUDIUM\n   */\n\n  {\n    group: \"education\",\n    label: \"AUTO/Education/Fernschule Weber\",\n    domains: [\n      \"fernschule-weber.de\"\n    ],\n    keywords: [\n      \"fernschule weber\",\n      \"lehrgang\",\n      \"studienbrief\",\n      \"einsendeaufgabe\",\n      \"fernschule\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"education\",\n    label: \"AUTO/Education/Fernschule\",\n    domains: [\n      \"info.ils.de\",\n      \"ils.de\",\n      \"dbuas.de\"\n    ],\n    keywords: [\n      \"ils\",\n      \"studienberatung\",\n      \"dbu\",\n      \"dbuas\",\n      \"fernschule\",\n      \"studium\",\n      \"weiterbildung\",\n      \"beratung\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  /**\n   * VERSICHERUNG / AUTO\n   */\n\n  {\n    group: \"insurance\",\n    label: \"AUTO/Versicherung\",\n    domains: [],\n    keywords: [\n      \"versicherung\",\n      \"police\",\n      \"beitrag\",\n      \"schaden\",\n      \"vertragsnummer\",\n      \"haftpflicht\",\n      \"hausrat\",\n      \"rechtsschutz\",\n      \"krankenversicherung\",\n      \"neodigital\"\n    ],\n    minScore: 40,\n    trusted: false\n  },\n\n  {\n    group: \"car\",\n    label: \"AUTO/Auto/ADAC\",\n    domains: [\n      \"adac.de\"\n    ],\n    keywords: [\n      \"adac\",\n      \"mitgliedschaft\",\n      \"pannenhilfe\",\n      \"club\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"car\",\n    label: \"AUTO/Auto/Shell\",\n    domains: [\n      \"shell.de\",\n      \"shell.com\"\n    ],\n    keywords: [\n      \"shell\",\n      \"tank\",\n      \"fuel\",\n      \"clubsmart\",\n      \"smartpay\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"car\",\n    label: \"AUTO/Auto/Check24\",\n    domains: [\n      \"check24.de\",\n      \"as.check24.de\"\n    ],\n    keywords: [\n      \"check24\",\n      \"kfz\",\n      \"kfz-versicherung\",\n      \"kfz-dokumente\",\n      \"versicherung\",\n      \"vergleich\",\n      \"auto\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  /**\n   * JOBS\n   */\n\n  {\n    group: \"job\",\n    label: \"AUTO/Job/XING\",\n    domains: [\n      \"xing.com\",\n      \"mail.xing.com\"\n    ],\n    keywords: [\n      \"xing\",\n      \"recruiter\",\n      \"job\",\n      \"karriere\",\n      \"stellenangebot\",\n      \"headhunter\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"job\",\n    label: \"AUTO/Job/Indeed\",\n    domains: [\n      \"indeed.com\",\n      \"jobalert.indeed.com\"\n    ],\n    keywords: [\n      \"indeed\",\n      \"job alert\",\n      \"stellenanzeige\",\n      \"stellenangebot\",\n      \"jobmail\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"job\",\n    label: \"AUTO/Job/jobvector\",\n    domains: [\n      \"jobagent.jobvector.de\",\n      \"jobvector.de\"\n    ],\n    keywords: [\n      \"jobvector\",\n      \"jobmail\",\n      \"stellenangebot\",\n      \"jobagent\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"job\",\n    label: \"AUTO/Job/Allgeier\",\n    domains: [\n      \"allgeier-public.eu\"\n    ],\n    keywords: [\n      \"allgeier\",\n      \"portal\",\n      \"projekt\",\n      \"job\",\n      \"auftrag\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"job\",\n    label: \"AUTO/Job/Jobangebote\",\n    domains: [],\n    keywords: [\n      \"jobangebot\",\n      \"jobangebote\",\n      \"stellenangebot\",\n      \"stellenanzeige\",\n      \"jobmail\",\n      \"bewerbung\",\n      \"recruiting\"\n    ],\n    minScore: 40,\n    trusted: false\n  },\n\n  /**\n   * ÄRZTE / HÖRBÜCHER / SUPPORT / TRACKING\n   */\n\n  {\n    group: \"doctor\",\n    label: \"AUTO/Ärzte/Doctolib\",\n    domains: [\n      \"doctolib.de\"\n    ],\n    keywords: [\n      \"doctolib\",\n      \"termin\",\n      \"arzt\",\n      \"praxis\",\n      \"sprechstunde\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"audio\",\n    label: \"AUTO/Hörbücher/Audible\",\n    domains: [\n      \"audible.de\",\n      \"mail.audible.de\"\n    ],\n    keywords: [\n      \"audible\",\n      \"hörbuch\",\n      \"audiobook\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"support\",\n    label: \"AUTO/Unterstützung/Buy Me a Coffee\",\n    domains: [\n      \"buymeacoffee.com\"\n    ],\n    keywords: [\n      \"buy me a coffee\",\n      \"supporter\",\n      \"donation\",\n      \"membership\",\n      \"coffee\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"tracking\",\n    label: \"AUTO/Tracking/FlightAware\",\n    domains: [\n      \"flightaware.com\"\n    ],\n    keywords: [\n      \"flightaware\",\n      \"flight\",\n      \"tracking\",\n      \"aircraft\",\n      \"flugzeug\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  /**\n   * SONSTIGES / GENERISCH\n   */\n\n  {\n    group: \"steam\",\n    label: \"AUTO/Steam\",\n    domains: [\n      \"steampowered.com\",\n      \"steamcommunity.com\"\n    ],\n    keywords: [\n      \"steam\",\n      \"wishlist\",\n      \"login\",\n      \"purchase\",\n      \"rechnung\",\n      \"guard\"\n    ],\n    minScore: 70,\n    trusted: true\n  },\n\n  {\n    group: \"phone\",\n    label: \"AUTO/Telefon\",\n    domains: [],\n    keywords: [\n      \"mobilfunk\",\n      \"telefon\",\n      \"rufnummer\",\n      \"handyvertrag\",\n      \"sim\",\n      \"rechnung\",\n      \"telefonrechnung\"\n    ],\n    minScore: 40,\n    trusted: false\n  },\n\n  {\n    group: \"internet\",\n    label: \"AUTO/Internet\",\n    domains: [],\n    keywords: [\n      \"internet\",\n      \"dsl\",\n      \"glasfaser\",\n      \"router\",\n      \"anschluss\",\n      \"störung\",\n      \"kabel\",\n      \"breitband\"\n    ],\n    minScore: 40,\n    trusted: false\n  },\n\n  {\n    group: \"rent\",\n    label: \"AUTO/Vermieter\",\n    domains: [],\n    keywords: [\n      \"miete\",\n      \"vermieter\",\n      \"nebenkosten\",\n      \"betriebskosten\",\n      \"wohnung\",\n      \"hausverwaltung\",\n      \"mietvertrag\"\n    ],\n    minScore: 40,\n    trusted: false\n  }\n];\n\nconst URGENT_KEYWORDS = [\n  \"dringend\",\n  \"urgent\",\n  \"sofort\",\n  \"zahlung fehlgeschlagen\",\n  \"payment failed\",\n  \"failed payment\",\n  \"sperrung\",\n  \"account suspended\",\n  \"konto gesperrt\",\n  \"mahnung\",\n  \"letzte erinnerung\",\n  \"last reminder\",\n  \"security alert\",\n  \"unusual activity\",\n  \"verdächtige aktivität\",\n  \"login attempt\",\n  \"unauthorized\",\n  \"unauthorised\",\n  \"frist\",\n  \"kündigung\",\n  \"polizei\",\n  \"onlinewache\",\n  \"anwalt\",\n  \"rechtsanwalt\",\n  \"kanzlei\",\n  \"santander\",\n  \"kfz-dokumente\"\n];\n\nconst ERROR_KEYWORDS = [\n  \"fehler\",\n  \"error\",\n  \"failed\",\n  \"failure\",\n  \"problem\",\n  \"störung\",\n  \"nicht erfolgreich\",\n  \"abgelehnt\",\n  \"declined\",\n  \"unable\",\n  \"failed payment\",\n  \"delivery failed\",\n  \"undelivered\",\n  \"bounce\",\n  \"rejected\"\n];\n\nconst SPAM_KEYWORDS = [\n  \"lotterie\",\n  \"gewonnen\",\n  \"bitcoin investment\",\n  \"crypto profit\",\n  \"schnell reich\",\n  \"kostenloses geld\",\n  \"millionen\",\n  \"inheritance\",\n  \"prince\",\n  \"casino bonus\",\n  \"viagra\"\n];\n\nconst IMPORTANT_RULES = [\n  {\n    domains: [\n      \"rechtsanwalt-tripp.de\",\n      \"kanzlei-dannhauer.de\"\n    ],\n    keywords: [\n      \"rechtsanwalt\",\n      \"kanzlei\",\n      \"anwalt\",\n      \"tripp\",\n      \"dannhauer\",\n      \"frist\",\n      \"mandat\",\n      \"akte\"\n    ]\n  },\n  {\n    domains: [\n      \"hh.onlinewache.polizei.de\",\n      \"polizei.de\"\n    ],\n    keywords: [\n      \"onlinewache\",\n      \"polizei\",\n      \"anzeige\",\n      \"vorgangsnummer\",\n      \"aktenzeichen\"\n    ]\n  },\n  {\n    domains: [\n      \"check24.de\",\n      \"as.check24.de\"\n    ],\n    keywords: [\n      \"kfz-dokumente\",\n      \"kfz-versicherung\",\n      \"kfz versicherung\",\n      \"versicherungsdokumente\"\n    ]\n  },\n  {\n    domains: [\n      \"email.santander.de\",\n      \"santander.de\"\n    ],\n    keywords: [\n      \"santander\",\n      \"consumer bank\",\n      \"kredit\",\n      \"banking\"\n    ]\n  }\n];\n\nfunction normalize(value) {\n  return String(value || \"\")\n    .toLowerCase()\n    .normalize(\"NFKC\")\n    .replace(/\\s+/g, \" \")\n    .trim();\n}\n\nfunction extractDomainFromEmail(email) {\n  const match = normalize(email).match(/@([a-z0-9.-]+)/);\n  return match ? match[1] : \"\";\n}\n\nfunction extractEmail(value) {\n  const raw = String(value || \"\");\n  return (\n    raw.match(/<([^>]+)>/)?.[1] ||\n    raw.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i)?.[0] ||\n    \"\"\n  ).toLowerCase();\n}\n\nfunction domainMatches(senderDomain, ruleDomain) {\n  const sender = normalize(senderDomain);\n  const rule = normalize(ruleDomain);\n\n  if (!sender || !rule) return false;\n\n  return sender === rule || sender.endsWith(\".\" + rule);\n}\n\nfunction keywordHits(haystack, keywords) {\n  const hits = [];\n\n  for (const keyword of keywords || []) {\n    const k = normalize(keyword);\n    if (k && haystack.includes(k)) {\n      hits.push(keyword);\n    }\n  }\n\n  return [...new Set(hits)];\n}\n\nfunction scoreRule(rule, senderDomain, fromEmail, haystack) {\n  let score = 0;\n\n  const matchedDomains = [];\n  const matchedKeywords = [];\n\n  for (const domain of rule.domains || []) {\n    if (domainMatches(senderDomain, domain)) {\n      matchedDomains.push(domain);\n      score += 70;\n    }\n  }\n\n  const hits = keywordHits(haystack, rule.keywords || []);\n  matchedKeywords.push(...hits);\n  score += hits.length * 20;\n\n  // Bonus, wenn Domain UND Keywords passen\n  if (matchedDomains.length > 0 && matchedKeywords.length > 0) {\n    score += 20;\n  }\n\n  // Sehr konkrete Trusted-Regeln dürfen bei starken Keyword-Treffern höher bewertet werden\n  if (rule.trusted && matchedKeywords.length >= 2 && score < 70) {\n    score = 70;\n  }\n\n  score = Math.min(score, 100);\n\n  return {\n    label: rule.label,\n    group: rule.group,\n    score,\n    trusted: !!rule.trusted,\n    matchedDomains,\n    matchedKeywords,\n    minScore: rule.minScore || 70\n  };\n}\n\nfunction confidenceFromScore(score, trusted) {\n  if (trusted && score >= 70) return 0.94;\n  if (score >= 95) return 0.99;\n  if (score >= 90) return 0.97;\n  if (score >= 80) return 0.92;\n  if (score >= 70) return 0.86;\n  if (score >= 40) return 0.65;\n  return 0.3;\n}\n\nreturn items.map(item => {\n  const fromRaw = item.json.from_raw || item.json.From || item.json.from || \"\";\n  const fromEmail = item.json.from_email || extractEmail(fromRaw);\n  const fromName = item.json.from_name || \"\";\n  const senderDomain =\n    item.json.sender_domain ||\n    extractDomainFromEmail(fromEmail) ||\n    extractDomainFromEmail(fromRaw);\n\n  const subject = item.json.subject || item.json.Subject || \"\";\n  const snippet = item.json.snippet || \"\";\n  const attachments = Array.isArray(item.json.attachments) ? item.json.attachments : [];\n\n  const haystack = normalize([\n    fromRaw,\n    fromEmail,\n    fromName,\n    senderDomain,\n    subject,\n    snippet,\n    attachments.join(\" \"),\n    item.json.classification_text || \"\"\n  ].join(\" \"));\n\n  const labels = new Set();\n  const workflowLabels = new Set();\n\n  const allRuleResults = RULES\n    .map(rule => scoreRule(rule, senderDomain, fromEmail, haystack))\n    .filter(result => result.score >= result.minScore)\n    .sort((a, b) => {\n      if (b.score !== a.score) return b.score - a.score;\n      if (b.trusted !== a.trusted) return Number(b.trusted) - Number(a.trusted);\n      return 0;\n    });\n\n  /**\n   * Pro Gruppe nur der beste Treffer.\n   * Beispiel:\n   * - Amazon KDP schlägt normales Amazon\n   * - Haspa / ING / Santander nicht gleichzeitig\n   * - YouTube / TikTok / Instagram nicht gleichzeitig\n   */\n  const bestByGroup = new Map();\n\n  for (const result of allRuleResults) {\n    if (!bestByGroup.has(result.group)) {\n      bestByGroup.set(result.group, result);\n    }\n  }\n\n  const selectedRuleResults = Array.from(bestByGroup.values())\n    .sort((a, b) => b.score - a.score);\n\n  for (const result of selectedRuleResults) {\n    labels.add(result.label);\n  }\n\n  // Workflow: Dringend\n  const urgentHits = keywordHits(haystack, URGENT_KEYWORDS);\n  if (urgentHits.length > 0) {\n    workflowLabels.add(\"AUTO/Dringend\");\n  }\n\n  // Workflow: Fehler\n  const errorHits = keywordHits(haystack, ERROR_KEYWORDS);\n  if (errorHits.length > 0) {\n    workflowLabels.add(\"AUTO/Fehler\");\n  }\n\n  // Workflow: Spam\n  const spamHits = keywordHits(haystack, SPAM_KEYWORDS);\n  if (spamHits.length > 0) {\n    workflowLabels.add(\"AUTO/SPAM\");\n  }\n\n  // Workflow: Wichtig\n  const importantHits = [];\n\n  for (const rule of IMPORTANT_RULES) {\n    const domainHit = (rule.domains || []).some(domain => domainMatches(senderDomain, domain));\n    const hits = keywordHits(haystack, rule.keywords || []);\n\n    if (domainHit || hits.length > 0) {\n      importantHits.push({\n        domains: rule.domains,\n        matched_keywords: hits\n      });\n    }\n  }\n\n  if (importantHits.length > 0) {\n    workflowLabels.add(\"AUTO/Wichtig\");\n    workflowLabels.add(\"AUTO/Dringend\");\n  }\n\n  for (const workflowLabel of workflowLabels) {\n    labels.add(workflowLabel);\n  }\n\n  const bestScore = selectedRuleResults.length > 0\n    ? selectedRuleResults[0].score\n    : 0;\n\n  const trustedCategoryFound = selectedRuleResults.some(result => result.trusted);\n\n  let confidence = confidenceFromScore(bestScore, trustedCategoryFound);\n\n  if (labels.size === 0) {\n    labels.add(\"AUTO/Review\");\n    confidence = 0.3;\n  }\n\n  const categoryLabels = Array.from(labels).filter(label => !WORKFLOW_LABELS.has(label));\n\n  /**\n   * KI nur, wenn:\n   * - keine Kategorie erkannt wurde\n   * - oder Confidence niedrig ist\n   * - außer: Trusted-Regel hat bereits sauber getroffen\n   */\n  const needsAi = categoryLabels.length === 0 || (!trustedCategoryFound && confidence < 0.85);\n\n  if (needsAi) {\n    labels.add(\"AUTO/Review\");\n  }\n\n  const finalLabels = Array.from(labels);\n\n  item.json.classification = {\n    labels: finalLabels,\n    category_labels: categoryLabels,\n    workflow_labels: Array.from(workflowLabels),\n    primary_label: categoryLabels[0] || \"AUTO/Review\",\n    confidence,\n    needs_ai: needsAi,\n    source: needsAi ? \"rules_low_confidence\" : \"rules\",\n    matched_rules: selectedRuleResults,\n    urgent_hits: urgentHits,\n    error_hits: errorHits,\n    spam_hits: spamHits,\n    important_hits: importantHits\n  };\n\n  item.json.label_names = finalLabels;\n  item.json.primary_label = categoryLabels[0] || \"AUTO/Review\";\n  item.json.needs_ai = needsAi;\n  item.json.classification_confidence = confidence;\n  item.json.classification_source = needsAi ? \"rules_low_confidence\" : \"rules\";\n\n  return item;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        -1400
+      ],
+      "id": "c94f4e3f-2174-4155-819f-17221275265b",
+      "name": "Classify Mail"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "118de4bc-f553-418a-b67c-c2f6555f6cbd",
+              "leftValue": "={{ $json.needs_ai }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1520,
+        -1400
+      ],
+      "id": "f3d43eee-80d4-4387-8b7e-d72ade20c9df",
+      "name": "Needs AI?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n/**\n * Mapping: AUTO Labelname -> Gmail Label ID\n * Diese IDs stammen aus den bereits angelegten Gmail-Labels.\n */\n\nconst LABEL_ID_MAP = {\n  \"AUTO\": \"Label_77\",\n\n  \"AUTO/Amazon\": \"Label_78\",\n  \"AUTO/Amazon KDP\": \"Label_79\",\n\n  \"AUTO/Bank/Haspa\": \"Label_80\",\n  \"AUTO/Bank/ING\": \"Label_81\",\n\n  \"AUTO/PayPal\": \"Label_82\",\n\n  \"AUTO/Kreditkarte/Barclays\": \"Label_83\",\n  \"AUTO/Kreditkarte/Amazon Visa\": \"Label_84\",\n  \"AUTO/Kreditkarte/Extra Card\": \"Label_85\",\n\n  \"AUTO/Fachzeitschriften/Heise\": \"Label_86\",\n  \"AUTO/Fachzeitschriften/IT Administrator\": \"Label_87\",\n\n  \"AUTO/Server/Hetzner\": \"Label_88\",\n  \"AUTO/Server/IONOS\": \"Label_89\",\n  \"AUTO/Server/Netcup\": \"Label_90\",\n  \"AUTO/Server/Hostinger\": \"Label_91\",\n  \"AUTO/Server/Zap-Hosting\": \"Label_92\",\n\n  \"AUTO/Security/CrowdSec\": \"Label_93\",\n\n  \"AUTO/KI/OpenAI\": \"Label_94\",\n  \"AUTO/KI/OpenRouter\": \"Label_95\",\n  \"AUTO/KI/ChatGPT\": \"Label_96\",\n\n  \"AUTO/Video/HeyGen\": \"Label_97\",\n  \"AUTO/Video/NotebookLM\": \"Label_98\",\n\n  \"AUTO/Social/Instagram\": \"Label_99\",\n  \"AUTO/Social/YouTube\": \"Label_100\",\n  \"AUTO/Social/TikTok\": \"Label_101\",\n\n  \"AUTO/Lieferanten/DHL\": \"Label_102\",\n  \"AUTO/Lieferanten/DPD\": \"Label_103\",\n  \"AUTO/Lieferanten/REWE\": \"Label_104\",\n\n  \"AUTO/Google/Auswertungen\": \"Label_105\",\n\n  \"AUTO/Education/Fernschule Weber\": \"Label_106\",\n\n  \"AUTO/Versicherung\": \"Label_107\",\n\n  \"AUTO/Auto/ADAC\": \"Label_108\",\n  \"AUTO/Auto/Shell\": \"Label_109\",\n  \"AUTO/Auto/Check24\": \"Label_110\",\n\n  \"AUTO/Steam\": \"Label_111\",\n  \"AUTO/Telefon\": \"Label_112\",\n  \"AUTO/Internet\": \"Label_113\",\n  \"AUTO/Job/XING\": \"Label_114\",\n  \"AUTO/Vermieter\": \"Label_115\",\n\n  \"AUTO/Dringend\": \"Label_116\",\n  \"AUTO/SPAM\": \"Label_117\",\n  \"AUTO/Review\": \"Label_118\",\n  \"AUTO/Fehler\": \"Label_119\",\n    \"AUTO/Wichtig\": \"Label_120\",\n  \"AUTO/Skool\": \"Label_121\",\n  \"AUTO/Lieferanten/Home24\": \"Label_122\",\n  \"AUTO/Social/Nebenan\": \"Label_123\",\n  \"AUTO/Server/Domains\": \"Label_124\",\n  \"AUTO/Learning/TryHackMe\": \"Label_125\",\n  \"AUTO/Learning/Skool\": \"Label_126\",\n  \"AUTO/Job/Indeed\": \"Label_127\",\n  \"AUTO/Job/jobvector\": \"Label_128\",\n  \"AUTO/Job/Allgeier\": \"Label_129\",\n  \"AUTO/Google/Maps\": \"Label_130\",\n  \"AUTO/Google/Search Console\": \"Label_131\",\n  \"AUTO/IT-Info\": \"Label_132\",\n  \"AUTO/KI/ElevenLabs\": \"Label_133\",\n  \"AUTO/KI/Midjourney\": \"Label_134\",\n  \"AUTO/Video/Runway\": \"Label_135\",\n  \"AUTO/Video/CapCut\": \"Label_136\",\n  \"AUTO/Video/TurboScribe\": \"Label_137\",\n  \"AUTO/eBay\": \"Label_138\",\n  \"AUTO/Hörbücher/Audible\": \"Label_139\",\n  \"AUTO/Ärzte/Doctolib\": \"Label_140\",\n  \"AUTO/Anwalt\": \"Label_141\",\n  \"AUTO/Kreditangebote\": \"Label_142\",\n  \"AUTO/Bank/Santander\": \"Label_143\",\n  \"AUTO/Polizei/Onlinewache\": \"Label_144\",\n  \"AUTO/Unterstützung/Buy Me a Coffee\": \"Label_145\",\n  \"AUTO/IT/VPN\": \"Label_146\",\n  \"AUTO/IT/Bitdefender\": \"Label_147\",\n  \"AUTO/Tracking/FlightAware\": \"Label_148\",\n  \"AUTO/Education/Fernschule\": \"Label_149\",\n  \"AUTO/Job/Jobangebote\": \"Label_150\",\n};\n\nconst REVIEW_LABEL = \"AUTO/Review\";\nconst ERROR_LABEL = \"AUTO/Fehler\";\n\nreturn items.map(item => {\n  const labelNames = Array.isArray(item.json.label_names)\n    ? item.json.label_names\n    : [];\n\n  const normalizedLabelNames = [...new Set(labelNames.filter(Boolean))];\n\n  const unknownLabels = normalizedLabelNames.filter(label => !LABEL_ID_MAP[label]);\n\n  let finalLabelNames = [...normalizedLabelNames];\n\n  /**\n   * Sicherheitsnetz:\n   * Falls irgendein Label nicht im Mapping existiert,\n   * markieren wir die Mail zusätzlich als Review + Fehler.\n   */\n  if (unknownLabels.length > 0) {\n    finalLabelNames.push(REVIEW_LABEL);\n    finalLabelNames.push(ERROR_LABEL);\n  }\n\n  finalLabelNames = [...new Set(finalLabelNames)];\n\n  const labelIds = finalLabelNames\n    .map(label => LABEL_ID_MAP[label])\n    .filter(Boolean);\n\n  item.json.label_names_mapped = finalLabelNames;\n  item.json.label_ids = [...new Set(labelIds)];\n  item.json.label_mapping = {\n    ok: unknownLabels.length === 0,\n    unknown_labels: unknownLabels\n  };\n\n  return item;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2192,
+        -1400
+      ],
+      "id": "994cf257-49b5-4030-a025-1b2879b6b8d6",
+      "name": "Map Gmail Label IDs"
+    },
+    {
+      "parameters": {
+        "resource": "thread",
+        "operation": "addLabels",
+        "threadId": "={{ $json.thread_id || $json.threadId || $json.id }}",
+        "labelIds": "={{ $json.label_ids }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2416,
+        -1328
+      ],
+      "id": "efee4329-b627-43e9-a0bf-b029937516e2",
+      "name": "Apply Labels to Gmail Thread"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"HTTP-Referer\": \"https://your-domain.example\",\n  \"X-OpenRouter-Title\": \"Gmail Auto Classifier\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"model\": \"openai/gpt-4o-mini\",\n  \"temperature\": 0,\n  \"max_tokens\": 300,\n  \"response_format\": {\n    \"type\": \"json_object\"\n  },\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Du bist ein E-Mail-Klassifizierer für Gmail. Du darfst ausschließlich Labels aus der erlaubten Liste zurückgeben. Antworte ausschließlich als gültiges JSON. Keine Markdown-Codeblöcke. Keine zusätzlichen Erklärungen außerhalb des JSON.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": `Klassifiziere diese E-Mail.\n\nErlaubte Labels:\nAUTO/Amazon\nAUTO/Amazon KDP\nAUTO/Bank/Haspa\nAUTO/Bank/ING\nAUTO/PayPal\nAUTO/Kreditkarte/Barclays\nAUTO/Kreditkarte/Amazon Visa\nAUTO/Kreditkarte/Extra Card\nAUTO/Fachzeitschriften/Heise\nAUTO/Fachzeitschriften/IT Administrator\nAUTO/Server/Hetzner\nAUTO/Server/IONOS\nAUTO/Server/Netcup\nAUTO/Server/Hostinger\nAUTO/Server/Zap-Hosting\nAUTO/Security/CrowdSec\nAUTO/KI/OpenAI\nAUTO/KI/OpenRouter\nAUTO/KI/ChatGPT\nAUTO/Video/HeyGen\nAUTO/Video/NotebookLM\nAUTO/Social/Instagram\nAUTO/Social/YouTube\nAUTO/Social/TikTok\nAUTO/Lieferanten/DHL\nAUTO/Lieferanten/DPD\nAUTO/Lieferanten/REWE\nAUTO/Google/Auswertungen\nAUTO/Education/Fernschule Weber\nAUTO/Versicherung\nAUTO/Auto/ADAC\nAUTO/Auto/Shell\nAUTO/Auto/Check24\nAUTO/Steam\nAUTO/Telefon\nAUTO/Internet\nAUTO/Job/XING\nAUTO/Vermieter\nAUTO/Dringend\nAUTO/SPAM\nAUTO/Review\nAUTO/Fehler\n\nRegeln:\n- Gib nur passende Labels zurück.\n- Wenn keine Kategorie sicher passt: AUTO/Review.\n- Bei Spam/Verdacht auf Spam: AUTO/SPAM.\n- Bei technischen Fehlern: AUTO/Fehler.\n- Bei dringenden, sicherheitskritischen oder fristkritischen Mails: AUTO/Dringend.\n- Nutze keine Labels außerhalb der Liste.\n- Antworte exakt in diesem JSON-Format:\n{\"labels\":[\"AUTO/Review\"],\"confidence\":0.3,\"reason\":\"kurze technische Begründung\"}\n\nE-Mail-Daten:\nFrom raw: ${$json.from_raw || $json.From || \"\"}\nFrom email: ${$json.from_email || \"\"}\nFrom name: ${$json.from_name || \"\"}\nSender domain: ${$json.sender_domain || \"\"}\nSubject: ${$json.subject || $json.Subject || \"\"}\nSnippet: ${$json.snippet || \"\"}\nAttachments: ${JSON.stringify($json.attachments || [])}\nBisherige Regel-Labels: ${JSON.stringify($json.label_names || [])}\nBisherige Confidence: ${$json.classification_confidence || \"\"}\nBisherige Quelle: ${$json.classification_source || \"\"}`\n    }\n  ]\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1744,
+        -1472
+      ],
+      "id": "0f80523c-f2b6-4034-83ac-09e1577476e0",
+      "name": "AI Classify Mail",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "notesInFlow": true,
+      "onError": "continueRegularOutput",
+      "notes": "Set your OpenRouter Bearer credential before activating."
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiItems = $input.all();\n\n/**\n * WICHTIG:\n * Die HTTP Request Node gibt normalerweise nur die AI-Antwort zurück.\n * Deshalb holen wir uns die Originaldaten aus der vorherigen Classify-Mail-Node.\n *\n * Da der Gmail Trigger typischerweise eine Mail pro Durchlauf verarbeitet,\n * reicht diese indexbasierte Zuordnung für deinen Workflow sauber aus.\n */\nconst originalItems = $items(\"Classify Mail\");\n\nconst ALLOWED_LABELS = new Set([\n  \"AUTO/Amazon\",\n  \"AUTO/Amazon KDP\",\n  \"AUTO/Bank/Haspa\",\n  \"AUTO/Bank/ING\",\n  \"AUTO/PayPal\",\n  \"AUTO/Kreditkarte/Barclays\",\n  \"AUTO/Kreditkarte/Amazon Visa\",\n  \"AUTO/Kreditkarte/Extra Card\",\n  \"AUTO/Fachzeitschriften/Heise\",\n  \"AUTO/Fachzeitschriften/IT Administrator\",\n  \"AUTO/Server/Hetzner\",\n  \"AUTO/Server/IONOS\",\n  \"AUTO/Server/Netcup\",\n  \"AUTO/Server/Hostinger\",\n  \"AUTO/Server/Zap-Hosting\",\n  \"AUTO/Security/CrowdSec\",\n  \"AUTO/KI/OpenAI\",\n  \"AUTO/KI/OpenRouter\",\n  \"AUTO/KI/ChatGPT\",\n  \"AUTO/Video/HeyGen\",\n  \"AUTO/Video/NotebookLM\",\n  \"AUTO/Social/Instagram\",\n  \"AUTO/Social/YouTube\",\n  \"AUTO/Social/TikTok\",\n  \"AUTO/Lieferanten/DHL\",\n  \"AUTO/Lieferanten/DPD\",\n  \"AUTO/Lieferanten/REWE\",\n  \"AUTO/Google/Auswertungen\",\n  \"AUTO/Education/Fernschule Weber\",\n  \"AUTO/Versicherung\",\n  \"AUTO/Auto/ADAC\",\n  \"AUTO/Auto/Shell\",\n  \"AUTO/Auto/Check24\",\n  \"AUTO/Steam\",\n  \"AUTO/Telefon\",\n  \"AUTO/Internet\",\n  \"AUTO/Job/XING\",\n  \"AUTO/Vermieter\",\n  \"AUTO/Dringend\",\n  \"AUTO/SPAM\",\n  \"AUTO/Review\",\n  \"AUTO/Fehler\"\n]);\n\nconst WORKFLOW_LABELS = new Set([\n  \"AUTO/Dringend\",\n  \"AUTO/SPAM\",\n  \"AUTO/Review\",\n  \"AUTO/Fehler\"\n]);\n\nfunction safeJsonParse(value) {\n  try {\n    return JSON.parse(value);\n  } catch {\n    return null;\n  }\n}\n\nfunction extractAiContent(aiJson) {\n  return (\n    aiJson?.choices?.[0]?.message?.content ||\n    aiJson?.choices?.[0]?.text ||\n    aiJson?.message?.content ||\n    aiJson?.content ||\n    \"\"\n  );\n}\n\nfunction parseAiJson(content) {\n  if (typeof content !== \"string\") {\n    return null;\n  }\n\n  let parsed = safeJsonParse(content);\n  if (parsed) {\n    return parsed;\n  }\n\n  // Falls die KI doch Markdown oder Text drumherum liefert\n  const match = content.match(/\\{[\\s\\S]*\\}/);\n  if (match) {\n    parsed = safeJsonParse(match[0]);\n  }\n\n  return parsed;\n}\n\nfunction normalizeLabels(labels) {\n  if (!Array.isArray(labels)) {\n    return [\"AUTO/Review\"];\n  }\n\n  const valid = labels\n    .map(label => String(label || \"\").trim())\n    .filter(label => ALLOWED_LABELS.has(label));\n\n  if (valid.length === 0) {\n    return [\"AUTO/Review\", \"AUTO/Fehler\"];\n  }\n\n  return [...new Set(valid)];\n}\n\nreturn aiItems.map((aiItem, index) => {\n  const original = originalItems[index]?.json || {};\n\n  const content = extractAiContent(aiItem.json);\n  const parsed = parseAiJson(content);\n\n  let aiLabels = normalizeLabels(parsed?.labels);\n\n  const previousLabels = Array.isArray(original.label_names)\n    ? original.label_names\n    : [];\n\n  const previousWorkflowLabels = previousLabels.filter(label => WORKFLOW_LABELS.has(label));\n\n  const aiHasRealCategory = aiLabels.some(label => !WORKFLOW_LABELS.has(label));\n\n  let finalLabels = [\n    ...previousWorkflowLabels,\n    ...aiLabels\n  ];\n\n  /**\n   * Wenn die KI eine echte Kategorie findet,\n   * entfernen wir AUTO/Review.\n   */\n  if (aiHasRealCategory) {\n    finalLabels = finalLabels.filter(label => label !== \"AUTO/Review\");\n  }\n\n  /**\n   * Wenn nur AUTO/Review übrig bleibt, ist das okay.\n   * Wenn gar nichts übrig bleibt, Sicherheitsfallback.\n   */\n  finalLabels = [...new Set(finalLabels)];\n\n  if (finalLabels.length === 0) {\n    finalLabels = [\"AUTO/Review\", \"AUTO/Fehler\"];\n  }\n\n  const realCategoryLabels = finalLabels.filter(label => !WORKFLOW_LABELS.has(label));\n\n  return {\n    json: {\n      ...original,\n\n      ai_response_raw: aiItem.json,\n      ai_classification: {\n        raw_content: content,\n        parsed,\n        labels: aiLabels,\n        confidence: typeof parsed?.confidence === \"number\" ? parsed.confidence : null,\n        reason: parsed?.reason || \"\",\n        parse_ok: parsed !== null\n      },\n\n      label_names: finalLabels,\n      primary_label: realCategoryLabels[0] || finalLabels[0] || \"AUTO/Review\",\n      needs_ai: false,\n      classification_confidence: typeof parsed?.confidence === \"number\"\n        ? parsed.confidence\n        : original.classification_confidence || 0.3,\n      classification_source: \"ai_fallback\"\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1968,
+        -1472
+      ],
+      "id": "d4b56877-e24c-481c-8181-d36ec0007f4b",
+      "name": "Merge AI Result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n/**\n * Preflight Mail Guard\n *\n * Zweck:\n * - bereits automatisch gelabelte Mails überspringen\n * - Spam/Trash/Drafts optional überspringen\n * - Systemlabels sauber auswerten\n * - Debug-Felder für spätere Prüfung setzen\n *\n * Kommt direkt nach:\n * Normalize Gmail Mail\n */\n\nconst AUTO_LABEL_IDS = new Set([\n  \"Label_77\",  // AUTO\n  \"Label_78\",  // AUTO/Amazon\n  \"Label_79\",  // AUTO/Amazon KDP\n  \"Label_80\",  // AUTO/Bank/Haspa\n  \"Label_81\",  // AUTO/Bank/ING\n  \"Label_82\",  // AUTO/PayPal\n  \"Label_83\",  // AUTO/Kreditkarte/Barclays\n  \"Label_84\",  // AUTO/Kreditkarte/Amazon Visa\n  \"Label_85\",  // AUTO/Kreditkarte/Extra Card\n  \"Label_86\",  // AUTO/Fachzeitschriften/Heise\n  \"Label_87\",  // AUTO/Fachzeitschriften/IT Administrator\n  \"Label_88\",  // AUTO/Server/Hetzner\n  \"Label_89\",  // AUTO/Server/IONOS\n  \"Label_90\",  // AUTO/Server/Netcup\n  \"Label_91\",  // AUTO/Server/Hostinger\n  \"Label_92\",  // AUTO/Server/Zap-Hosting\n  \"Label_93\",  // AUTO/Security/CrowdSec\n  \"Label_94\",  // AUTO/KI/OpenAI\n  \"Label_95\",  // AUTO/KI/OpenRouter\n  \"Label_96\",  // AUTO/KI/ChatGPT\n  \"Label_97\",  // AUTO/Video/HeyGen\n  \"Label_98\",  // AUTO/Video/NotebookLM\n  \"Label_99\",  // AUTO/Social/Instagram\n  \"Label_100\", // AUTO/Social/YouTube\n  \"Label_101\", // AUTO/Social/TikTok\n  \"Label_102\", // AUTO/Lieferanten/DHL\n  \"Label_103\", // AUTO/Lieferanten/DPD\n  \"Label_104\", // AUTO/Lieferanten/REWE\n  \"Label_105\", // AUTO/Google/Auswertungen\n  \"Label_106\", // AUTO/Education/Fernschule Weber\n  \"Label_107\", // AUTO/Versicherung\n  \"Label_108\", // AUTO/Auto/ADAC\n  \"Label_109\", // AUTO/Auto/Shell\n  \"Label_110\", // AUTO/Auto/Check24\n  \"Label_111\", // AUTO/Steam\n  \"Label_112\", // AUTO/Telefon\n  \"Label_113\", // AUTO/Internet\n  \"Label_114\", // AUTO/Job/XING\n  \"Label_115\", // AUTO/Vermieter\n  \"Label_116\", // AUTO/Dringend\n  \"Label_117\", // AUTO/SPAM\n  \"Label_118\", // AUTO/Review\n  \"Label_119\"  // AUTO/Fehler\n]);\n\nconst AUTO_LABEL_NAMES = new Set([\n  \"AUTO\",\n  \"AUTO/Amazon\",\n  \"AUTO/Amazon KDP\",\n  \"AUTO/Bank/Haspa\",\n  \"AUTO/Bank/ING\",\n  \"AUTO/PayPal\",\n  \"AUTO/Kreditkarte/Barclays\",\n  \"AUTO/Kreditkarte/Amazon Visa\",\n  \"AUTO/Kreditkarte/Extra Card\",\n  \"AUTO/Fachzeitschriften/Heise\",\n  \"AUTO/Fachzeitschriften/IT Administrator\",\n  \"AUTO/Server/Hetzner\",\n  \"AUTO/Server/IONOS\",\n  \"AUTO/Server/Netcup\",\n  \"AUTO/Server/Hostinger\",\n  \"AUTO/Server/Zap-Hosting\",\n  \"AUTO/Security/CrowdSec\",\n  \"AUTO/KI/OpenAI\",\n  \"AUTO/KI/OpenRouter\",\n  \"AUTO/KI/ChatGPT\",\n  \"AUTO/Video/HeyGen\",\n  \"AUTO/Video/NotebookLM\",\n  \"AUTO/Social/Instagram\",\n  \"AUTO/Social/YouTube\",\n  \"AUTO/Social/TikTok\",\n  \"AUTO/Lieferanten/DHL\",\n  \"AUTO/Lieferanten/DPD\",\n  \"AUTO/Lieferanten/REWE\",\n  \"AUTO/Google/Auswertungen\",\n  \"AUTO/Education/Fernschule Weber\",\n  \"AUTO/Versicherung\",\n  \"AUTO/Auto/ADAC\",\n  \"AUTO/Auto/Shell\",\n  \"AUTO/Auto/Check24\",\n  \"AUTO/Steam\",\n  \"AUTO/Telefon\",\n  \"AUTO/Internet\",\n  \"AUTO/Job/XING\",\n  \"AUTO/Vermieter\",\n  \"AUTO/Dringend\",\n  \"AUTO/SPAM\",\n  \"AUTO/Review\",\n  \"AUTO/Fehler\",\n    \"AUTO/Wichtig\",\n  \"AUTO/Skool\",\n  \"AUTO/Lieferanten/Home24\",\n  \"AUTO/Social/Nebenan\",\n  \"AUTO/Server/Domains\",\n  \"AUTO/Learning/TryHackMe\",\n  \"AUTO/Learning/Skool\",\n  \"AUTO/Job/Indeed\",\n  \"AUTO/Job/jobvector\",\n  \"AUTO/Job/Allgeier\",\n  \"AUTO/Google/Maps\",\n  \"AUTO/Google/Search Console\",\n  \"AUTO/IT-Info\",\n  \"AUTO/KI/ElevenLabs\",\n  \"AUTO/KI/Midjourney\",\n  \"AUTO/Video/Runway\",\n  \"AUTO/Video/CapCut\",\n  \"AUTO/Video/TurboScribe\",\n  \"AUTO/eBay\",\n  \"AUTO/Hörbücher/Audible\",\n  \"AUTO/Ärzte/Doctolib\",\n  \"AUTO/Anwalt\",\n  \"AUTO/Kreditangebote\",\n  \"AUTO/Bank/Santander\",\n  \"AUTO/Polizei/Onlinewache\",\n  \"AUTO/Unterstützung/Buy Me a Coffee\",\n  \"AUTO/IT/VPN\",\n  \"AUTO/IT/Bitdefender\",\n  \"AUTO/Tracking/FlightAware\",\n  \"AUTO/Education/Fernschule\",\n  \"AUTO/Job/Jobangebote\",\n]);\n\nfunction extractLabels(json) {\n  const raw = [];\n\n  if (Array.isArray(json.labels)) {\n    for (const label of json.labels) {\n      if (typeof label === \"string\") {\n        raw.push(label);\n      } else if (label?.id) {\n        raw.push(label.id);\n      } else if (label?.name) {\n        raw.push(label.name);\n      }\n    }\n  }\n\n  if (Array.isArray(json.labelIds)) {\n    raw.push(...json.labelIds);\n  }\n\n  if (Array.isArray(json.gmail_labels)) {\n    raw.push(...json.gmail_labels);\n  }\n\n  return [...new Set(raw.filter(Boolean))];\n}\n\nreturn items.map(item => {\n  const labels = extractLabels(item.json);\n\n  const hasAutoLabel = labels.some(label =>\n    AUTO_LABEL_IDS.has(label) ||\n    AUTO_LABEL_NAMES.has(label) ||\n    String(label).startsWith(\"AUTO/\")\n  );\n\n  const isTrash = labels.includes(\"TRASH\");\n  const isSpam = labels.includes(\"SPAM\");\n  const isDraft = labels.includes(\"DRAFT\");\n  const isSent = labels.includes(\"SENT\");\n\n  /**\n   * Verarbeitungslogik:\n   * - bereits AUTO-gelabelt: überspringen\n   * - Trash/Spam/Draft/Sent: überspringen\n   * - alles andere: verarbeiten\n   */\n  const skipReasons = [];\n\n  if (hasAutoLabel) skipReasons.push(\"already_auto_labeled\");\n  if (isTrash) skipReasons.push(\"trash\");\n  if (isSpam) skipReasons.push(\"gmail_spam\");\n  if (isDraft) skipReasons.push(\"draft\");\n  if (isSent) skipReasons.push(\"sent\");\n\n  const shouldProcess = skipReasons.length === 0;\n\n  item.json.preflight = {\n    should_process: shouldProcess,\n    skip_reasons: skipReasons,\n    existing_labels: labels,\n    has_auto_label: hasAutoLabel\n  };\n\n  item.json.should_process = shouldProcess;\n  item.json.skip_reasons = skipReasons;\n\n  return item;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        -1400
+      ],
+      "id": "f313d011-7bfb-4ea3-8e31-855571f11879",
+      "name": "Preflight Mail Guard"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "665b9d27-589a-4f25-a746-30ca9ff8b788",
+              "leftValue": "={{ $json.should_process }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1072,
+        -1400
+      ],
+      "id": "adb4788a-e3a4-4983-ae6c-967eb8624c3d",
+      "name": "Should Process?"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 20,
+        "filters": {
+          "q": "in:inbox -in:trash -in:spam"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        176,
+        -1208
+      ],
+      "id": "1a9bcc72-8447-4155-bbcd-37b2327edca1",
+      "name": "Get many messages"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        400,
+        -1208
+      ],
+      "id": "fdcb9a09-a275-4a22-9448-a38c9999b901",
+      "name": "Loop Over Items"
+    }
+  ],
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Gmail Mail": {
+      "main": [
+        [
+          {
+            "node": "Preflight Mail Guard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Mail": {
+      "main": [
+        [
+          {
+            "node": "Needs AI?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs AI?": {
+      "main": [
+        [
+          {
+            "node": "AI Classify Mail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Map Gmail Label IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Gmail Label IDs": {
+      "main": [
+        [
+          {
+            "node": "Apply Labels to Gmail Thread",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply Labels to Gmail Thread": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Classify Mail": {
+      "main": [
+        [
+          {
+            "node": "Merge AI Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge AI Result": {
+      "main": [
+        [
+          {
+            "node": "Map Gmail Label IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preflight Mail Guard": {
+      "main": [
+        [
+          {
+            "node": "Should Process?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Process?": {
+      "main": [
+        [
+          {
+            "node": "Classify Mail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Normalize Gmail Mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "active": false
+}
